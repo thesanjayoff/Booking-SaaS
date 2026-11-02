@@ -7,9 +7,9 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3100",
     "worker": "tsx scripts/worker.ts",
     "seed": "tsx scripts/seed.ts",
     "typecheck": "tsc --noEmit",

@@ -8,7 +8,7 @@ const bool = z
 const schema = z.object({
   APP_SECRET: z.string().min(32, "APP_SECRET must be at least 32 characters"),
   ADMIN_PASSWORD: z.string().min(8, "ADMIN_PASSWORD must be at least 8 characters"),
-  APP_URL: z.string().url().default("http://localhost:3000"),
+  APP_URL: z.string().url().default("http://localhost:3100"),
   DATABASE_PATH: z.string().default("./data/app.db"),
   TRUST_PROXY: bool,
   RUN_WORKER: z

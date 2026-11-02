@@ -22,8 +22,12 @@ Requires **Node 22.13+** (it uses the built-in `node:sqlite`; nothing native to 
 npm install
 cp .env.example .env          # then edit: APP_SECRET, ADMIN_PASSWORD, APP_URL
 npm run seed                  # demo clinic: 5 services, hours, holidays, ~100 bookings
-npm run dev                   # http://localhost:3000   (admin: /admin)
+npm run dev                   # http://localhost:3100   (owner login: http://localhost:3100/admin)
 ```
+
+The app uses port **3100**, not Next's usual 3000, because 3000 is often already taken by another project
+(you would then see that project's "page not found" at `/admin`). To move it, change `-p 3100` in
+`package.json` and `APP_URL` in `.env` together.
 
 Generate a secret with `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`.
 `npm run seed -- --reset` wipes the database first.
