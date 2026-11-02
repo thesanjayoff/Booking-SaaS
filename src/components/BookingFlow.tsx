@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Clock, Globe, Lock, MapPin, Spinner, Video, Wallet } from "@/components/icons";
+import Stepper from "@/components/Stepper";
 
 export type FlowService = {
   slug: string;
@@ -43,6 +45,22 @@ const longDate = (key: string) =>
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+/** Short zone name for a given instant, e.g. "GMT+5:30". */
+const zoneName = (iso: string, tz: string) =>
+  new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" }).formatToParts(new Date(iso)).find((p) => p.type === "timeZoneName")?.value ?? tz;
+
+const FIELD_LABELS: Record<string, string> = { name: "Full name", email: "Email", phone: "Phone", notes: "Notes" };
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <p id={id} className="mt-1.5 flex items-start gap-1.5 text-sm text-red-600">
+      <Alert className="mt-0.5 size-4 shrink-0" />
+      {message}
+    </p>
+  );
+}
+
 function loadRazorpay(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
   if (window.Razorpay) return Promise.resolve(true);
@@ -73,6 +91,7 @@ export default function BookingFlow({ service, businessName, businessTimezone, m
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const idemKey = useRef<string>("");
+  const summaryRef = useRef<HTMLDivElement>(null);
 
   // Detect the visitor's zone after hydration (avoids server/client mismatch).
   useEffect(() => {
@@ -132,6 +151,11 @@ export default function BookingFlow({ service, businessName, businessTimezone, m
     if (selectedDate && !byDate.has(selectedDate)) setSelectedDate(null);
     if (selectedSlot && !slots.includes(selectedSlot)) setSelectedSlot(null);
   }, [byDate, slots, selectedDate, selectedSlot]);
+
+  // Send keyboard and screen-reader focus to the error summary when validation fails.
+  useEffect(() => {
+    if (Object.keys(fieldErrors).length) summaryRef.current?.focus();
+  }, [fieldErrors]);
 
   const grid = useMemo(() => {
     const first = new Date(Date.UTC(cursor.y, cursor.m, 1));
@@ -235,7 +259,7 @@ export default function BookingFlow({ service, businessName, businessTimezone, m
           name: body.payment.businessName,
           description: body.payment.description,
           prefill: body.payment.prefill,
-          theme: { color: "#0d9488" },
+          theme: { color: "#e0b972" },
           handler: async (r: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
             await fetch(`/api/bookings/${body.id}/pay/verify`, {
               method: "POST",
@@ -258,55 +282,66 @@ export default function BookingFlow({ service, businessName, businessTimezone, m
   }
 
   const daySlots = selectedDate ? (byDate.get(selectedDate) ?? []) : [];
+  const todayKey = dateKey(today.toISOString(), tz);
+  const errorFields = Object.keys(fieldErrors).filter((k) => k in FIELD_LABELS);
 
   return (
-    <div className="card overflow-hidden lg:grid lg:grid-cols-[18rem_1fr]">
-      {/* ---- left: summary ---- */}
-      <aside className="border-b border-slate-200 bg-slate-50 p-6 lg:border-b-0 lg:border-r">
-        <p className="text-sm font-medium text-slate-500">{businessName}</p>
-        <h1 className="mt-1 text-xl font-bold text-slate-900">{reschedule ? "Reschedule: " : ""}{service.name}</h1>
-        <ul className="mt-4 space-y-2 text-sm text-slate-700">
-          <li>⏱ {service.durationMin} minutes</li>
-          <li>💳 {service.priceLabel}{service.depositLabel ? ` · ${service.depositLabel} deposit to confirm` : ""}</li>
-          {service.createMeet && <li>🎥 Video link provided after booking</li>}
-          {service.location && <li>📍 {service.location}</li>}
+    <div className="panel overflow-hidden lg:grid lg:grid-cols-[19rem_minmax(0,1fr)]">
+      {/* ---- left: what you're booking ---- */}
+      <aside className="relative border-b border-[rgba(247,237,213,0.07)] bg-[rgba(224,185,114,0.04)] p-6 sm:p-8 lg:border-b-0 lg:border-r">
+        <p className="text-sm font-semibold text-gold-400">{businessName}</p>
+        <h1 className="mt-2 text-fluid-xl font-medium text-gold-100">{reschedule ? "Reschedule: " : ""}{service.name}</h1>
+        <ul className="mt-6 space-y-3 text-[0.9375rem] text-gold-200">
+          <li className="flex items-center gap-3"><Clock className="size-5 shrink-0 text-gold-250" />{service.durationMin} minutes</li>
+          <li className="flex items-center gap-3"><Wallet className="size-5 shrink-0 text-gold-250" />{service.priceLabel}{service.depositLabel ? ` · ${service.depositLabel} deposit to confirm` : ""}</li>
+          {service.createMeet && <li className="flex items-center gap-3"><Video className="size-5 shrink-0 text-gold-250" />Video link provided after booking</li>}
+          {service.location && <li className="flex items-start gap-3"><MapPin className="mt-0.5 size-5 shrink-0 text-gold-250" />{service.location}</li>}
         </ul>
-        {service.description && <p className="mt-4 text-sm text-slate-600">{service.description}</p>}
+        {service.description && <p className="mt-6 text-[0.9375rem] text-slate-500">{service.description}</p>}
 
         {selectedSlot && (
-          <div className="mt-5 rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-800" data-testid="selected-summary">
-            <div className="font-semibold">{longDate(dateKey(selectedSlot, tz))}</div>
-            <div>{timeLabel(selectedSlot, tz)}</div>
+          <div
+            className="mt-7 rounded-[var(--radius-card)] border border-gold-250/40 bg-gold-250/10 p-4"
+            data-testid="selected-summary"
+            style={{ animation: "rise-in 0.5s var(--ease-out-expo) both" }}
+          >
+            <p className="eyebrow">Your time</p>
+            <p className="mt-2 text-lg font-semibold tracking-[-0.02em] text-gold-100">{longDate(dateKey(selectedSlot, tz))}</p>
+            <p className="text-gold-200">{timeLabel(selectedSlot, tz)} <span className="text-slate-500">({zoneName(selectedSlot, tz)})</span></p>
           </div>
         )}
 
-        <div className="mt-6">
-          <label htmlFor="tz" className="label">Your time zone</label>
+        <div className="mt-7">
+          <label htmlFor="tz" className="label flex items-center gap-2"><Globe className="size-4 text-gold-250" />Your time zone</label>
           <select id="tz" className="input" value={tz} onChange={(e) => setTz(e.target.value)}>
             {zones.map((z) => (
               <option key={z} value={z}>{z.replace(/_/g, " ")}</option>
             ))}
           </select>
-          {tz !== businessTimezone && <p className="mt-1 text-xs text-slate-500">Clinic time zone: {businessTimezone.replace(/_/g, " ")}</p>}
+          {tz !== businessTimezone && <p className="mt-2 text-sm text-slate-500">Clinic time zone: {businessTimezone.replace(/_/g, " ")}</p>}
         </div>
       </aside>
 
       {/* ---- right: picker or form ---- */}
-      <section className="p-6">
+      <section className="p-6 sm:p-8 lg:p-10" aria-busy={submitting}>
+        <div className="mb-8">
+          <Stepper steps={reschedule ? ["Pick a new time", "Confirmed"] : ["Pick a time", "Your details", "Confirmed"]} current={step === "pick" ? 0 : 1} />
+        </div>
+
         {step === "pick" && (
-          <div className="grid gap-6 md:grid-cols-[1fr_12rem]">
+          <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_12.5rem]">
             <div>
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-base font-semibold">{monthLabel}</h2>
-                <div className="flex gap-1">
-                  <button type="button" className="btn-secondary !px-3 !py-1.5" onClick={() => goMonth(-1)} disabled={curIdx <= minCursor} aria-label="Previous month">‹</button>
-                  <button type="button" className="btn-secondary !px-3 !py-1.5" onClick={() => goMonth(1)} disabled={curIdx >= maxCursor} aria-label="Next month">›</button>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-fluid-lg font-semibold tracking-[-0.03em]">{monthLabel}</h2>
+                <div className="flex gap-2">
+                  <button type="button" className="btn-secondary !min-h-11 !w-11 !p-0" onClick={() => goMonth(-1)} disabled={curIdx <= minCursor} aria-label="Previous month"><ChevronLeft className="size-5" /></button>
+                  <button type="button" className="btn-secondary !min-h-11 !w-11 !p-0" onClick={() => goMonth(1)} disabled={curIdx >= maxCursor} aria-label="Next month"><ChevronRight className="size-5" /></button>
                 </div>
               </div>
-              <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-500">
+              <div className="grid grid-cols-7 gap-1.5 text-center text-xs font-semibold text-slate-500" aria-hidden="true">
                 {WEEKDAYS.map((w) => <div key={w} className="py-1">{w}</div>)}
               </div>
-              <div className="mt-1 grid grid-cols-7 gap-1" role="grid" aria-label={monthLabel} aria-busy={loading}>
+              <div className={`mt-1.5 grid grid-cols-7 gap-1.5 transition-opacity duration-300 ${loading ? "opacity-50" : ""}`} role="group" aria-label={monthLabel} aria-busy={loading}>
                 {grid.map((key, i) =>
                   key === null ? (
                     <div key={`b${i}`} />
@@ -315,106 +350,121 @@ export default function BookingFlow({ service, businessName, businessTimezone, m
                       key={key}
                       type="button"
                       data-date={key}
+                      data-today={key === todayKey}
                       disabled={!byDate.has(key)}
                       onClick={() => { setSelectedDate(key); setSelectedSlot(null); }}
                       aria-pressed={selectedDate === key}
-                      className={[
-                        "aspect-square rounded-lg text-sm font-medium transition",
-                        selectedDate === key
-                          ? "bg-brand-600 text-white"
-                          : byDate.has(key)
-                            ? "bg-brand-50 text-brand-800 hover:bg-brand-100"
-                            : "cursor-not-allowed text-slate-300",
-                      ].join(" ")}
+                      aria-label={`${longDate(key)}${byDate.has(key) ? "" : ", no times available"}`}
+                      className="day"
                     >
                       {Number(key.slice(8))}
                     </button>
                   ),
                 )}
               </div>
-              {loading && <p className="mt-3 text-sm text-slate-500" role="status">Loading availability…</p>}
-              {loadError && <p className="mt-3 text-sm text-red-600" role="alert">{loadError}</p>}
+              {loading && <p className="mt-4 flex items-center gap-2 text-sm text-slate-500" role="status"><Spinner className="size-4 text-gold-250" />Loading availability…</p>}
+              {loadError && (
+                <div className="mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-tile)] border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                  <Alert className="size-5 shrink-0" />
+                  <span className="min-w-0 flex-1">{loadError}</span>
+                  <button type="button" className="btn-secondary !min-h-9 !px-4 !py-1 !text-sm" onClick={() => void fetchSlots()}>Try again</button>
+                </div>
+              )}
               {!loading && !loadError && byDate.size === 0 && (
-                <p className="mt-3 text-sm text-slate-500">No openings this month. Try the next month.</p>
+                <p className="mt-4 text-sm text-slate-500">No openings this month. Try the next month.</p>
               )}
             </div>
 
             <div>
-              <h2 className="mb-3 text-base font-semibold">{selectedDate ? longDate(selectedDate) : "Pick a date"}</h2>
+              <h2 className="mb-4 text-fluid-lg font-semibold tracking-[-0.03em]">{selectedDate ? longDate(selectedDate) : "Pick a date"}</h2>
               {selectedDate ? (
-                <ul className="max-h-80 space-y-2 overflow-y-auto pr-1" data-testid="slot-list">
+                <ul className="-m-1 grid max-h-80 grid-cols-3 gap-2 overflow-y-auto p-1 md:grid-cols-1" data-testid="slot-list">
                   {daySlots.map((s) => (
                     <li key={s}>
-                      <button
-                        type="button"
-                        data-slot={s}
-                        onClick={() => pickSlot(s)}
-                        aria-pressed={selectedSlot === s}
-                        className={[
-                          "w-full rounded-lg border px-3 py-2 text-sm font-semibold transition",
-                          selectedSlot === s ? "border-brand-600 bg-brand-600 text-white" : "border-brand-200 text-brand-700 hover:border-brand-600",
-                        ].join(" ")}
-                      >
+                      <button type="button" data-slot={s} onClick={() => pickSlot(s)} aria-pressed={selectedSlot === s} className="slot w-full">
                         {timeLabel(s, tz)}
                       </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-slate-500">Highlighted dates have openings.</p>
+                <p className="text-sm text-slate-500">Choose a highlighted date to see its times.</p>
               )}
             </div>
 
             {selectedSlot && (
-              <div className="md:col-span-2">
-                {submitError && <p className="mb-2 text-sm text-red-600" role="alert">{submitError}</p>}
+              <div className="md:col-span-2" style={{ animation: "rise-in 0.5s var(--ease-out-expo) both" }}>
+                {submitError && (
+                  <p className="mb-3 flex items-start gap-2 text-sm text-red-600" role="alert"><Alert className="mt-0.5 size-4 shrink-0" />{submitError}</p>
+                )}
                 {reschedule ? (
-                  <button type="button" className="btn-primary w-full" disabled={submitting || selectedSlot === reschedule.currentStart} onClick={submitReschedule}>
-                    {submitting ? "Moving…" : "Confirm new time"}
+                  <button type="button" className="btn-primary w-full sm:w-auto sm:min-w-64" disabled={submitting || selectedSlot === reschedule.currentStart} onClick={submitReschedule}>
+                    {submitting ? <><Spinner className="size-4" />Moving…</> : "Confirm new time"}
                   </button>
                 ) : (
-                  <button type="button" className="btn-primary w-full" onClick={() => setStep("details")}>Continue</button>
+                  <button type="button" className="btn-primary w-full sm:w-auto sm:min-w-64" onClick={() => setStep("details")}>
+                    Continue <ArrowRight className="size-4" />
+                  </button>
                 )}
               </div>
             )}
-            {!selectedSlot && submitError && <p className="text-sm text-red-600 md:col-span-2" role="alert">{submitError}</p>}
+            {!selectedSlot && submitError && (
+              <p className="flex items-start gap-2 text-sm text-red-600 md:col-span-2" role="alert"><Alert className="mt-0.5 size-4 shrink-0" />{submitError}</p>
+            )}
           </div>
         )}
 
         {step === "details" && selectedSlot && (
-          <form onSubmit={submitBooking} className="space-y-4" noValidate>
-            <button type="button" className="text-sm font-medium text-brand-700 hover:underline" onClick={() => setStep("pick")}>← Change time</button>
-            <h2 className="text-lg font-semibold">Your details</h2>
+          <form onSubmit={submitBooking} className="max-w-xl space-y-5" noValidate>
+            <button type="button" className="inline-flex min-h-11 items-center gap-2 rounded-full pr-3 text-sm font-semibold text-gold-200 transition-colors hover:text-gold-100" onClick={() => setStep("pick")}>
+              <ArrowLeft className="size-4" /> Change time
+            </button>
+            <h2 className="text-fluid-xl font-medium tracking-[-0.04em]">Your details</h2>
+
+            {errorFields.length > 0 && (
+              <div ref={summaryRef} tabIndex={-1} role="alert" className="rounded-[var(--radius-card)] border border-red-200 bg-red-50 p-4 text-sm text-red-700 outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                <p className="flex items-center gap-2 font-semibold"><Alert className="size-4" />Check {errorFields.length === 1 ? "this field" : "these fields"} to continue</p>
+                <ul className="mt-2 list-inside list-disc">
+                  {errorFields.map((k) => (
+                    <li key={k}><a href={`#${k}`} className="font-semibold underline underline-offset-2">{FIELD_LABELS[k]}</a></li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div>
               <label htmlFor="name" className="label">Full name</label>
-              <input id="name" className="input" autoComplete="name" required maxLength={100} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!fieldErrors.name} />
-              {fieldErrors.name && <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>}
+              <input id="name" className="input" autoComplete="name" required maxLength={100} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} aria-invalid={!!fieldErrors.name} aria-describedby={fieldErrors.name ? "name-error" : undefined} />
+              <FieldError id="name-error" message={fieldErrors.name} />
             </div>
             <div>
               <label htmlFor="email" className="label">Email</label>
-              <input id="email" type="email" className="input" autoComplete="email" required maxLength={254} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-invalid={!!fieldErrors.email} />
-              {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
+              <input id="email" type="email" className="input" autoComplete="email" required maxLength={254} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-invalid={!!fieldErrors.email} aria-describedby={fieldErrors.email ? "email-error" : undefined} />
+              <FieldError id="email-error" message={fieldErrors.email} />
             </div>
             <div>
-              <label htmlFor="phone" className="label">Phone <span className="font-normal text-slate-400">(for SMS / WhatsApp reminders)</span></label>
-              <input id="phone" type="tel" className="input" autoComplete="tel" placeholder="+91 98765 43210" maxLength={30} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!fieldErrors.phone} />
-              {fieldErrors.phone && <p className="mt-1 text-xs text-red-600">{fieldErrors.phone}</p>}
+              <label htmlFor="phone" className="label">Phone <span className="font-normal text-slate-500">(for SMS / WhatsApp reminders)</span></label>
+              <input id="phone" type="tel" className="input" autoComplete="tel" placeholder="+91 98765 43210" maxLength={30} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} aria-invalid={!!fieldErrors.phone} aria-describedby={fieldErrors.phone ? "phone-error" : undefined} />
+              <FieldError id="phone-error" message={fieldErrors.phone} />
             </div>
             <div>
-              <label htmlFor="notes" className="label">Anything we should know? <span className="font-normal text-slate-400">(optional)</span></label>
-              <textarea id="notes" className="input min-h-24" maxLength={1000} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              <label htmlFor="notes" className="label">Anything we should know? <span className="font-normal text-slate-500">(optional)</span></label>
+              <textarea id="notes" className="input min-h-28" maxLength={1000} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
             {/* Honeypot: hidden from people, irresistible to form-filling bots. */}
             <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" }}>
               <label>Website<input tabIndex={-1} autoComplete="off" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} /></label>
             </div>
 
-            {submitError && <p className="text-sm text-red-600" role="alert">{submitError}</p>}
+            {submitError && errorFields.length === 0 && (
+              <p className="flex items-start gap-2 text-sm text-red-600" role="alert"><Alert className="mt-0.5 size-4 shrink-0" />{submitError}</p>
+            )}
             <button type="submit" className="btn-primary w-full" disabled={submitting}>
-              {submitting ? "Booking…" : service.depositLabel ? `Continue to pay ${service.depositLabel} deposit` : "Confirm booking"}
+              {submitting ? <><Spinner className="size-4" />Booking…</> : service.depositLabel ? <>Continue to pay {service.depositLabel} deposit</> : "Confirm booking"}
             </button>
-            <p className="text-center text-xs text-slate-500">You'll get a link to cancel or reschedule.</p>
+            <p className="flex items-center justify-center gap-2 text-center text-sm text-slate-500">
+              <Lock className="size-4" /> You&apos;ll get a link to cancel or reschedule.
+            </p>
           </form>
         )}
       </section>

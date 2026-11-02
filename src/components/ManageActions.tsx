@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert, Spinner } from "@/components/icons";
 
 export function CancelButton({ id, token }: { id: string; token: string }) {
   const router = useRouter();
@@ -32,13 +33,13 @@ export function CancelButton({ id, token }: { id: string; token: string }) {
 
   if (!open) return <button type="button" className="btn-secondary" onClick={() => setOpen(true)}>Cancel appointment</button>;
   return (
-    <div className="w-full rounded-lg border border-red-200 bg-red-50 p-4">
-      <p className="text-sm font-medium text-red-900">Cancel this appointment?</p>
+    <div className="w-full rounded-[var(--radius-card)] border border-red-200 bg-red-50 p-5" style={{ animation: "rise-in 0.4s var(--ease-out-expo) both" }}>
+      <p className="font-semibold text-red-900">Cancel this appointment?</p>
       <label htmlFor="reason" className="label mt-3">Reason <span className="font-normal text-slate-500">(optional)</span></label>
       <input id="reason" className="input" maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} />
-      {error && <p className="mt-2 text-sm text-red-700" role="alert">{error}</p>}
-      <div className="mt-3 flex gap-2">
-        <button type="button" className="btn-danger" onClick={cancel} disabled={busy}>{busy ? "Cancelling…" : "Yes, cancel it"}</button>
+      {error && <p className="mt-3 flex items-start gap-2 text-sm text-red-700" role="alert"><Alert className="mt-0.5 size-4 shrink-0" />{error}</p>}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button type="button" className="btn-danger" onClick={cancel} disabled={busy}>{busy ? <><Spinner className="size-4" />Cancelling…</> : "Yes, cancel it"}</button>
         <button type="button" className="btn-secondary" onClick={() => setOpen(false)} disabled={busy}>Keep it</button>
       </div>
     </div>
@@ -79,7 +80,7 @@ export function PayDepositButton({ id, token, label, autoOpen }: { id: string; t
         name: p.businessName,
         description: p.description,
         prefill: p.prefill,
-        theme: { color: "#0d9488" },
+        theme: { color: "#e0b972" },
         handler: async (r: Record<string, string>) => {
           await fetch(`/api/bookings/${id}/pay/verify`, {
             method: "POST",
@@ -104,8 +105,8 @@ export function PayDepositButton({ id, token, label, autoOpen }: { id: string; t
 
   return (
     <div>
-      <button type="button" className="btn-primary" onClick={pay} disabled={busy}>{busy ? "Opening…" : label}</button>
-      {error && <p className="mt-2 text-sm text-red-600" role="alert">{error}</p>}
+      <button type="button" className="btn-primary" onClick={pay} disabled={busy}>{busy ? <><Spinner className="size-4" />Opening…</> : label}</button>
+      {error && <p className="mt-3 flex items-start gap-2 text-sm text-red-600" role="alert"><Alert className="mt-0.5 size-4 shrink-0" />{error}</p>}
     </div>
   );
 }
