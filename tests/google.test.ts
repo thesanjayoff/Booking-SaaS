@@ -32,7 +32,7 @@ class FakeGoogle {
     return ev;
   }
   addForeign(ev: Record<string, any>) {
-    const e = { status: "confirmed", ...ev } as Ev;
+    const e = { status: "confirmed", ...ev } as unknown as Ev;
     this.events.set(e.id, this.touch(e));
     return e;
   }

@@ -55,7 +55,7 @@ export const emailAdapter: Adapter = {
     const e = env();
     const subject = sanitizeHeader(m.subject ?? "");
     if (!has(e.SMTP_HOST)) {
-      const dir = path.resolve("data/outbox");
+      const dir = path.resolve(/*turbopackIgnore: true*/ "data/outbox");
       fs.mkdirSync(dir, { recursive: true });
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       fs.writeFileSync(path.join(dir, `${id}.json`), JSON.stringify({ to: m.to, subject, text: m.text, hasIcs: !!m.ics }, null, 2));

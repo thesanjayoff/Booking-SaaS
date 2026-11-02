@@ -18,6 +18,8 @@ const csp = [
 ].join("; ");
 
 const config: NextConfig = {
+  // Lets the e2e suite build and serve its own copy without touching a dev server's .next folder.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   agentRules: false,
   reactStrictMode: true,

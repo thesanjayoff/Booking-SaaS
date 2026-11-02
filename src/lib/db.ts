@@ -10,12 +10,13 @@ const g = globalThis as unknown as { __bookingDb?: Map<string, Db> };
 
 function resolveTarget(file?: string) {
   const target = file ?? process.env.DATABASE_PATH ?? "./data/app.db";
-  const key = target === ":memory:" ? target : path.resolve(target);
+  // The DB location is operator config, not a project file: keep the bundler from tracing the repo.
+  const key = target === ":memory:" ? target : path.resolve(/*turbopackIgnore: true*/ target);
   return { target, key };
 }
 
 function open(file: string): Db {
-  if (file !== ":memory:") fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
+  if (file !== ":memory:") fs.mkdirSync(path.dirname(path.resolve(/*turbopackIgnore: true*/ file)), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec("PRAGMA journal_mode = WAL");
   db.exec("PRAGMA busy_timeout = 15000");

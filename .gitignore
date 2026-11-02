@@ -9,3 +9,6 @@ next-env.d.ts
 test-results
 playwright-report
 .tmp
+tests/e2e/.auth.json
+data/e2e.db*
+.next-e2e
