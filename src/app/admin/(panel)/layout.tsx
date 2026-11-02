@@ -1,5 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import AdminNav from "@/components/AdminNav";
+import { Monogram } from "@/components/SiteChrome";
+import { ArrowUpRight } from "@/components/icons";
 import { requireAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { logoutAction } from "../actions";
@@ -7,34 +10,27 @@ import { logoutAction } from "../actions";
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin" }, robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-const NAV = [
-  ["/admin", "Dashboard"],
-  ["/admin/calendar", "Calendar"],
-  ["/admin/bookings", "Bookings"],
-  ["/admin/customers", "Customers"],
-  ["/admin/services", "Services"],
-  ["/admin/availability", "Availability"],
-  ["/admin/settings", "Settings"],
-] as const;
-
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   await requireAdmin();
   const s = getSettings();
   return (
     <div className="min-h-screen">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/admin" className="font-bold text-brand-700">{s.businessName}</Link>
-          <nav className="flex flex-1 flex-wrap gap-1 text-sm" aria-label="Admin">
-            {NAV.map(([href, label]) => (
-              <Link key={href} href={href} className="rounded-md px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900">{label}</Link>
-            ))}
-          </nav>
-          <Link href="/" className="text-sm text-slate-500 hover:underline" target="_blank">View booking page ↗</Link>
-          <form action={logoutAction}><button className="btn-secondary !px-3 !py-1.5 !text-xs">Sign out</button></form>
+      <header className="glass sticky top-0 z-40 border-b border-[rgba(247,237,213,0.07)]">
+        <div className="gutter mx-auto flex w-full max-w-[1280px] flex-wrap items-center gap-x-6 gap-y-1 py-2">
+          <Link href="/admin" className="flex shrink-0 items-center gap-3 rounded-lg py-1">
+            <Monogram name={s.businessName} size="2.25rem" />
+            <span className="font-bold tracking-[-0.03em] text-gold-100">{s.businessName}</span>
+          </Link>
+          <div className="order-last flex w-full min-w-0 lg:order-none lg:w-auto lg:flex-1"><AdminNav /></div>
+          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+            <Link href="/" target="_blank" className="hidden min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-slate-500 hover:text-gold-100 sm:inline-flex">
+              View booking page <ArrowUpRight className="size-4" />
+            </Link>
+            <form action={logoutAction}><button className="btn-secondary !min-h-10 !px-4 !py-1.5 !text-sm">Sign out</button></form>
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <main className="gutter mx-auto w-full max-w-[1280px] py-8 sm:py-10">{children}</main>
     </div>
   );
 }

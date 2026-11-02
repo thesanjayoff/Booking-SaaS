@@ -20,7 +20,7 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 300_000,
     env: {
-      NEXT_DIST_DIR: ".next-e2e",
+      NEXT_DIST_DIR: process.env.E2E_DIST_DIR || ".next-e2e",
       DATABASE_PATH: "./data/e2e.db",
       APP_SECRET: "e2e-secret-e2e-secret-e2e-secret-1234567",
       ADMIN_PASSWORD: "e2e-admin-password",

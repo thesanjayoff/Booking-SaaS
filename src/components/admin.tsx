@@ -22,7 +22,7 @@ export function Flash({ ok, error }: { ok?: string; error?: string }) {
   return (
     <div
       role={error ? "alert" : "status"}
-      className={`mb-5 rounded-lg border px-4 py-3 text-sm ${error ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}
+      className={`mb-6 rounded-[var(--radius-card)] border px-4 py-3 text-sm font-semibold ${error ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}
     >
       {error ?? ok}
     </div>
@@ -31,8 +31,8 @@ export function Flash({ ok, error }: { ok?: string; error?: string }) {
 
 export function PageHeader({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+      <h1 className="text-fluid-xl font-medium tracking-[-0.045em] text-gold-100">{title}</h1>
       <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );
@@ -40,10 +40,10 @@ export function PageHeader({ title, children }: { title: string; children?: Reac
 
 export function StatCard({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: "warn" }) {
   return (
-    <div className="card p-4">
-      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
-      <div className={`mt-1 text-2xl font-bold ${tone === "warn" ? "text-rose-600" : "text-slate-900"}`}>{value}</div>
-      {sub && <div className="mt-0.5 text-xs text-slate-500">{sub}</div>}
+    <div className="card p-5">
+      <div className="eyebrow !text-gold-400">{label}</div>
+      <div className={`mt-3 text-fluid-xl font-medium tracking-[-0.04em] ${tone === "warn" ? "text-rose-600" : "text-gold-100"}`}>{value}</div>
+      {sub && <div className="mt-1 text-sm text-slate-500">{sub}</div>}
     </div>
   );
 }
@@ -94,7 +94,7 @@ export function BookingRow({ b, tz, returnTo, showDate }: { b: Booking; tz: stri
         {b.status === "confirmed" && !started && (
           <details className="relative">
             <summary className="btn-secondary cursor-pointer list-none !px-3 !py-1.5 !text-xs">Move…</summary>
-            <form action={rescheduleAction} className="absolute right-0 z-10 mt-1 w-64 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+            <form action={rescheduleAction} className="absolute right-0 z-10 mt-1 w-64 rounded-[var(--radius-card)] border border-slate-300 bg-ink-850 p-4 shadow-2xl shadow-black/60">
               <input type="hidden" name="id" value={b.id} /><input type="hidden" name="returnTo" value={returnTo} />
               <label className="label" htmlFor={`m-${b.id}`}>New time ({tz.replace(/_/g, " ")})</label>
               <input id={`m-${b.id}`} name="when" type="datetime-local" step={300} required className="input" />
@@ -105,7 +105,7 @@ export function BookingRow({ b, tz, returnTo, showDate }: { b: Booking; tz: stri
         {active && (
           <details className="relative">
             <summary className="btn-secondary cursor-pointer list-none !px-3 !py-1.5 !text-xs">Cancel…</summary>
-            <form action={cancelBookingAction} className="absolute right-0 z-10 mt-1 w-64 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+            <form action={cancelBookingAction} className="absolute right-0 z-10 mt-1 w-64 rounded-[var(--radius-card)] border border-slate-300 bg-ink-850 p-4 shadow-2xl shadow-black/60">
               <input type="hidden" name="id" value={b.id} /><input type="hidden" name="returnTo" value={returnTo} />
               <label className="label" htmlFor={`r-${b.id}`}>Reason (sent to customer)</label>
               <input id={`r-${b.id}`} name="reason" className="input" maxLength={300} />
