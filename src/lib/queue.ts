@@ -99,9 +99,9 @@ export async function processOne(db: Db = getDb(), now = Date.now()): Promise<bo
   try {
     if (!handler) throw new Error(`No handler registered for job type "${job.type}"`);
     await handler(job, { db, now });
-    markDone(db, job.id);
+    markDone(db, job.id, now);
   } catch (e) {
-    markFailed(db, job, e);
+    markFailed(db, job, e, now);
   }
   return true;
 }

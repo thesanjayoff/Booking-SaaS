@@ -12,6 +12,8 @@ import { createService, deleteOrArchiveService, SlugTakenError, updateService } 
 import { getSettings, saveSettings, settingsSchema } from "@/lib/settings";
 import { addException, addRule, deleteException, deleteRule, replaceDayRules } from "@/lib/availability/store";
 import { enqueue } from "@/lib/queue";
+import { disconnect } from "@/lib/google/oauth";
+import { syncFromGoogle } from "@/lib/google/sync";
 import { DateTime } from "luxon";
 
 /* ---------------------------------------------------------------- helpers */
@@ -266,6 +268,25 @@ export async function saveSettingsAction(fd: FormData) {
   }
   revalidatePath("/", "layout");
   back("/admin/settings", "ok", "Settings saved. Reminder changes apply to new and rescheduled bookings.");
+}
+
+export async function disconnectGoogleAction() {
+  await requireAdmin();
+  await disconnect(getDb());
+  revalidatePath("/admin", "layout");
+  back("/admin/settings", "ok", "Google Calendar disconnected.");
+}
+
+export async function syncGoogleNowAction() {
+  await requireAdmin();
+  let n = 0;
+  try {
+    n = (await syncFromGoogle(getDb())).changed;
+  } catch (e) {
+    back("/admin/settings", "error", `Sync failed: ${message(e)}`);
+  }
+  revalidatePath("/admin", "layout");
+  back("/admin/settings", "ok", `Synced with Google Calendar (${n} change${n === 1 ? "" : "s"}).`);
 }
 
 export async function retryFailedJobsAction() {
