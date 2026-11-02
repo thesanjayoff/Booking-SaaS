@@ -41,8 +41,8 @@ To run the background worker as its own process instead, set `RUN_WORKER=0` on t
 ### Tests
 
 ```bash
-npm test            # 132 unit/integration tests (Vitest)
-npm run test:e2e    # 24 browser + API tests (Playwright)
+npm test            # 137 unit/integration tests (Vitest)
+npm run test:e2e    # 28 browser + API tests (Playwright)
 npm run typecheck
 ```
 
@@ -124,7 +124,7 @@ number, 4xx) are not retried. Failed jobs can be retried from the settings page.
   built. If you outgrow it, `src/lib/db.ts` is the only place that touches the driver.
 - **Time**: all instants are stored as UTC epoch milliseconds. Weekly hours, breaks and holidays are stored
   as wall-clock times in the business time zone and resolved to UTC per date, which is what makes DST work.
-- **Security**: strict CSP and headers (`next.config.ts`), zod validation on every route, 32 KB body cap,
+- **Security**: strict nonce-based CSP (`src/proxy.ts`) and other headers (`next.config.ts`), zod validation on every route, 32 KB body cap,
   rate limits on public routes, honeypot field, HMAC-signed manage links, signed admin cookie, admin check
   inside every page/action/route (not just the layout), CSV formula-injection protection, secrets only in
   env. See `SECURITY_CHECK.md` for the results of a scan of the built output.
