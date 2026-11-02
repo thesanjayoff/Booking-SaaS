@@ -40,8 +40,15 @@ test.describe("public booking flow", () => {
     await page.goto("/book/general-consultation");
     await page.waitForSelector("button[data-date]:not([disabled])");
     const date = new Date(slot).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
-    await page.locator(`button[data-date="${date}"]`).click();
-    await expect(page.locator(`button[data-slot="${slot}"]`)).toHaveCount(0);
+    const day = page.locator(`button[data-date="${date}"]`);
+    // If that was the day's last free slot, the whole day is now disabled, which also proves the slot is gone
+    // (this happens when the suite runs late in the day and "today" has only one slot left).
+    if (await day.isEnabled()) {
+      await day.click();
+      await expect(page.locator(`button[data-slot="${slot}"]`)).toHaveCount(0);
+    } else {
+      await expect(day).toBeDisabled();
+    }
   });
 
   test("validation errors are shown inline and nothing is booked", async ({ page }) => {

@@ -8,6 +8,7 @@ test("security headers are present on pages and API responses", async ({ request
     expect(h["x-frame-options"], path).toBe("DENY");
     expect(h["x-content-type-options"], path).toBe("nosniff");
     expect(h["content-security-policy"], path).toContain("frame-ancestors 'none'");
+    expect(h["content-security-policy"], path).not.toMatch(/script-src[^;]*'unsafe-inline'/);
     expect(h["referrer-policy"], path).toBeTruthy();
     expect(h["x-powered-by"], path).toBeUndefined();
   }
