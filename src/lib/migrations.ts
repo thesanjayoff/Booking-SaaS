@@ -73,6 +73,11 @@ CREATE TABLE bookings (
   id TEXT PRIMARY KEY,
   service_id TEXT NOT NULL REFERENCES services(id),
   customer_id TEXT NOT NULL REFERENCES customers(id),
+  -- Snapshot of who made THIS booking. Reminders and emails use these, never the shared customer row,
+  -- so someone re-using an email address cannot redirect another booking's messages.
+  contact_name TEXT NOT NULL,
+  contact_email TEXT NOT NULL,
+  contact_phone TEXT NOT NULL DEFAULT '',
   start_at INTEGER NOT NULL,
   end_at INTEGER NOT NULL,
   block_start INTEGER NOT NULL,

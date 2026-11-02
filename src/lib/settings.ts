@@ -14,7 +14,7 @@ export const settingsSchema = z.object({
   /** Customers cannot book sooner than this many minutes from now. */
   minNoticeMin: z.number().int().min(0).max(60 * 24 * 30),
   /** Customers cannot book further out than this many days. */
-  maxAdvanceDays: z.number().int().min(1).max(730),
+  maxAdvanceDays: z.number().int().min(1).max(3650),
   /** Default gap between offered start times. Services may override. */
   slotIntervalMin: z.number().int().min(5).max(240).multipleOf(5),
   /** Customers may cancel/reschedule up to this many hours before the start. 0 = anytime. */
