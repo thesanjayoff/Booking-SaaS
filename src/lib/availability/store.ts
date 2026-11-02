@@ -48,7 +48,7 @@ export function buildQuery(
   db: Db,
   service: Service,
   range: { from: number; to: number },
-  opts: { excludeBookingId?: string; now?: number } = {},
+  opts: { excludeBookingId?: string; now?: number; ignoreNotice?: boolean } = {},
 ): SlotQuery {
   const s = getSettings(db);
   const now = opts.now ?? Date.now();
@@ -65,7 +65,7 @@ export function buildQuery(
     intervalMin: service.slotIntervalMin ?? s.slotIntervalMin,
     busy: loadBusy(db, range.from - pad, range.to + pad, { ...opts, now }),
     now,
-    minNoticeMin: s.minNoticeMin,
+    minNoticeMin: opts.ignoreNotice ? 0 : s.minNoticeMin,
     maxAdvanceDays: s.maxAdvanceDays,
     rangeStart: range.from,
     rangeEnd: range.to,
@@ -83,7 +83,7 @@ export function getSlots(
   return computeSlots(buildQuery(db, service, range, opts));
 }
 
-export function slotIsOffered(db: Db, service: Service, start: number, opts: { excludeBookingId?: string; now?: number } = {}): boolean {
+export function slotIsOffered(db: Db, service: Service, start: number, opts: { excludeBookingId?: string; now?: number; ignoreNotice?: boolean } = {}): boolean {
   return isSlotOffered(buildQuery(db, service, { from: start, to: start + 1 }, opts), start);
 }
 

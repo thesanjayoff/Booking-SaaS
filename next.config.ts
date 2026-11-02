@@ -19,6 +19,7 @@ const csp = [
 
 const config: NextConfig = {
   poweredByHeader: false,
+  agentRules: false,
   reactStrictMode: true,
   serverExternalPackages: ["nodemailer"],
   async headers() {
