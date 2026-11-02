@@ -1,49 +1,578 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-ink: #0f172a;
+/* ==========================================================================
+   Black & gold design system
+   Ink backgrounds, champagne text, one signature gold. Gold is an accent, not
+   a body colour. Manrope carries everything; DM Mono is for small eyebrows.
+   ========================================================================== */
+
+@theme static {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Ink */
+  --color-ink-950: #0b0906;
+  --color-ink-900: #110f0a;
+  --color-ink-850: #16130e;
+  --color-ink-800: #1b1913;
+  --color-ink-700: #26231a;
+  --color-ink-600: #342f22;
+
+  /* Champagne + gold */
+  --color-gold-100: #f7edd5;
+  --color-gold-200: #e3d0ac;
+  --color-gold-250: #e0b972;
+  --color-gold-300: #d8ae60;
+  --color-gold-400: #cba155;
+  --color-gold-600: #9b7845;
+  --color-gold-700: #735c3b;
+
+  /* Fluid type scale: one continuous ramp from 320px to 2000px */
+  --text-fluid-xs: clamp(0.86rem, 0.83rem + 0.16vw, 0.9rem);
+  --text-fluid-sm: clamp(0.94rem, 0.91rem + 0.16vw, 1rem);
+  --text-fluid-md: clamp(1rem, 0.95rem + 0.24vw, 1.125rem);
+  --text-fluid-lg: clamp(1.06rem, 0.97rem + 0.44vw, 1.25rem);
+  --text-fluid-xl: clamp(1.35rem, 1.02rem + 1.48vw, 2.5rem);
+  --text-fluid-2xl: clamp(1.75rem, 1.24rem + 2.26vw, 3.5rem);
+  --text-fluid-3xl: clamp(2.3rem, 1.55rem + 3.35vw, 5rem);
+
+  /* Radii */
+  --radius-panel: 2rem;
+  --radius-media: 1.5rem;
+  --radius-card: 1rem;
+  --radius-tile: 0.75rem;
+
+  /* Motion vocabulary */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-weighted: cubic-bezier(0.65, 0, 0.076, 1);
+
+  /* ---- Legacy colour names, remapped for the dark theme -------------------
+     The admin screens were written with slate / brand / tinted status classes.
+     Re-pointing the scales here re-themes them without touching every class.
+     `white` becomes the dark surface, so `text-white` on a gold fill reads as
+     ink on gold. */
+  --color-white: #16130e;
+
+  --color-slate-50: #15120d;
+  --color-slate-100: #1d1a13;
+  --color-slate-200: #2b261a;
+  --color-slate-300: #4a4332;
+  --color-slate-400: #8f8166;
+  --color-slate-500: #a89a7d;
+  --color-slate-600: #c2b390;
+  --color-slate-700: #d6c7a3;
+  --color-slate-800: #e8dab6;
+  --color-slate-900: #f7edd5;
+
+  --color-brand-50: #1d1710;
+  --color-brand-100: #2a2114;
+  --color-brand-200: #4d3d20;
+  --color-brand-500: #cba155;
+  --color-brand-600: #e0b972;
+  --color-brand-700: #e0b972;
+  --color-brand-800: #f5dfa8;
+
+  --color-red-50: #2b1210;
+  --color-red-100: #3b1815;
+  --color-red-200: #5e2722;
+  --color-red-600: #f08a80;
+  --color-red-700: #f59f97;
+  --color-red-800: #f9b6af;
+  --color-red-900: #fbcac5;
+
+  --color-rose-50: #2b1219;
+  --color-rose-100: #3b1722;
+  --color-rose-500: #f4476a;
+  --color-rose-600: #fb7a93;
+  --color-rose-700: #fd9fb1;
+  --color-rose-900: #fecdd6;
+
+  --color-amber-50: #2a1f0b;
+  --color-amber-100: #3a2a0d;
+  --color-amber-200: #5b4311;
+  --color-amber-500: #f0a81f;
+  --color-amber-800: #f4c35f;
+  --color-amber-900: #f8d890;
+
+  --color-emerald-50: #0f2218;
+  --color-emerald-100: #133123;
+  --color-emerald-200: #1f5237;
+  --color-emerald-500: #34d399;
+  --color-emerald-700: #5fd3a3;
+  --color-emerald-800: #86e3bc;
+  --color-emerald-900: #a7f0cf;
+
+  --color-sky-50: #0e1e2a;
+  --color-sky-100: #12293a;
+  --color-sky-500: #38bdf8;
+  --color-sky-700: #7dd3fc;
+  --color-sky-900: #bae6fd;
 }
 
-html {
-  color-scheme: light;
+:root {
+  --gutter: clamp(1rem, 0.55rem + 2.1vw, 2rem);
+  --section-y: clamp(3.5rem, 1.6rem + 8vw, 8rem);
+  --stack: clamp(1.5rem, 0.9rem + 2.6vw, 4rem);
+  --tap: 44px;
+  --header-h: clamp(3.6rem, 3.2rem + 1.6vw, 4.6rem);
+  --hairline: 1px solid rgba(247, 237, 213, 0.08);
+  --gold-gradient: linear-gradient(135deg, #9c7830, #e4b460 38%, #f5dfa8 52%, #cc9c48 68%, #8b6b2c);
 }
 
-body {
-  background: #f8fafc;
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-ink-950);
+    scrollbar-color: #3a3426 transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--color-ink-950);
+    background-image:
+      radial-gradient(60rem 38rem at 88% -8%, rgba(224, 185, 114, 0.09), transparent 62%),
+      radial-gradient(48rem 30rem at -6% 8%, rgba(155, 120, 69, 0.07), transparent 60%);
+    background-repeat: no-repeat;
+    color: var(--color-gold-100);
+    font-family: var(--font-sans);
+    font-size: var(--text-fluid-sm);
+    font-weight: 500;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  h1 { letter-spacing: -0.05em; line-height: 1.05; }
+  h2 { letter-spacing: -0.043em; line-height: 1.15; }
+  h3 { letter-spacing: -0.03em; line-height: 1.2; }
+  p { text-wrap: pretty; }
+
+  /* Long unbreakable strings must never force a horizontal scrollbar. */
+  p, h1, h2, h3, h4, a, address, li, dd { overflow-wrap: anywhere; }
+
+  ::selection {
+    background: var(--color-gold-250);
+    color: var(--color-ink-950);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-250);
+    outline-offset: 3px;
+  }
+
+  button, [role="button"], summary, select, input[type="checkbox"], input[type="radio"], label[for] {
+    cursor: pointer;
+  }
+  button:disabled { cursor: not-allowed; }
+
+  /* Native date pickers and selects follow the dark scheme. */
+  input, select, textarea { color-scheme: dark; }
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.85) sepia(0.4); cursor: pointer; }
+
+  input[type="checkbox"], input[type="radio"] {
+    accent-color: var(--color-gold-250);
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  /* iOS zooms inputs under 16px. */
+  input, select, textarea { font-size: max(16px, 1rem); }
 }
+
+/* ---- Primitives ---------------------------------------------------------- */
 
 @utility card {
-  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  border-radius: var(--radius-card);
+  border: var(--hairline);
+  background: linear-gradient(180deg, rgba(247, 237, 213, 0.04), rgba(247, 237, 213, 0.016));
 }
+@utility panel {
+  border-radius: var(--radius-panel);
+  border: var(--hairline);
+  background: linear-gradient(180deg, rgba(247, 237, 213, 0.045), rgba(247, 237, 213, 0.015));
+  backdrop-filter: blur(1rem);
+}
+@utility glass {
+  background: rgba(17, 15, 10, 0.72);
+  backdrop-filter: blur(1rem);
+}
+
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0.55rem 1.3rem;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.35s var(--ease-out-expo),
+    background-position 0.6s var(--ease-out-expo),
+    border-color 0.35s ease-out,
+    color 0.35s ease-out,
+    box-shadow 0.4s var(--ease-out-expo),
+    transform 0.35s var(--ease-out-expo);
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    transform: none;
+  }
 }
 @utility btn-primary {
-  @apply btn bg-brand-600 text-white hover:bg-brand-700;
+  @apply btn;
+  color: var(--color-ink-950);
+  background-image: var(--gold-gradient);
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  box-shadow: 0 0 0 1px rgba(245, 223, 168, 0.25) inset;
+  &:hover:not(:disabled) {
+    background-position: 100% 50%;
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 0 1px rgba(245, 223, 168, 0.35) inset,
+      0 12px 32px -12px rgba(224, 185, 114, 0.55);
+  }
+  &:active:not(:disabled) { transform: translateY(0); }
 }
 @utility btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-800 hover:bg-slate-50;
+  @apply btn;
+  color: var(--color-gold-100);
+  background: rgba(247, 237, 213, 0.03);
+  border: 1px solid rgba(247, 237, 213, 0.16);
+  &:hover:not(:disabled) {
+    border-color: rgba(224, 185, 114, 0.6);
+    background: rgba(224, 185, 114, 0.08);
+    color: #fff8e6;
+  }
 }
 @utility btn-danger {
-  @apply btn bg-red-600 text-white hover:bg-red-700;
+  @apply btn;
+  color: #1a0907;
+  background: #ee7468;
+  &:hover:not(:disabled) {
+    background: #f58c82;
+    box-shadow: 0 12px 30px -14px rgba(238, 116, 104, 0.7);
+  }
 }
+
 @utility input {
-  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
+  display: block;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0.6rem 0.95rem;
+  border-radius: var(--radius-tile);
+  border: 1px solid rgba(247, 237, 213, 0.14);
+  background: rgba(247, 237, 213, 0.035);
+  color: var(--color-gold-100);
+  font-weight: 500;
+  transition: border-color 0.25s ease-out, background-color 0.25s ease-out, box-shadow 0.25s ease-out;
+  &::placeholder { color: #8f8166; }
+  &:hover:not(:disabled) { border-color: rgba(247, 237, 213, 0.26); }
+  &:focus {
+    outline: none;
+    border-color: var(--color-gold-250);
+    background: rgba(224, 185, 114, 0.06);
+    box-shadow: 0 0 0 3px rgba(224, 185, 114, 0.22);
+  }
+  &[aria-invalid="true"] {
+    border-color: #f08a80;
+    box-shadow: 0 0 0 3px rgba(240, 138, 128, 0.18);
+  }
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 @utility label {
-  @apply mb-1 block text-sm font-medium text-slate-700;
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: var(--color-gold-200);
 }
 @utility badge {
-  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1.3;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 24%, transparent);
+}
+
+/* Small DM Mono marker. Uppercase, positive tracking: the inverse of headings. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-fluid-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-gold-400);
+}
+@utility gold-text {
+  background-image: var(--gold-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+@utility hairline {
+  border: var(--hairline);
+}
+@utility gutter {
+  padding-inline: var(--gutter);
+}
+
+/* ---- Line-mask reveal (components/Copy.tsx) ------------------------------- */
+/* SplitText with mask:"lines" emits .line elements inside .line-mask wrappers. */
+
+.line:not([class*="-mask"]) {
+  position: relative;
+  transform: translateY(100%);
+  will-change: transform;
+  /* Room for descenders, or the mask clips the tail of g, y and p. */
+  padding-bottom: 0.2em;
+  margin-bottom: -0.2em;
+}
+.line[class*="-mask"] {
+  transform: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  will-change: auto;
+}
+
+/* Copy is hidden until it has been split; a failsafe reveals it if scripts never run. */
+[data-copy="pending"],
+[data-reveal="pending"] {
+  opacity: 0;
+  animation: copy-failsafe 0.01s 3s forwards;
+}
+@keyframes copy-failsafe {
+  to { opacity: 1; }
+}
+
+/* ---- Entrance helpers ------------------------------------------------------ */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes draw-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 185, 114, 0.5); }
+  50% { box-shadow: 0 0 0 0.45rem rgba(224, 185, 114, 0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Touch + motion accessibility ----------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  a:not(.btn):not([class*="btn-"]), button:not(.btn):not([class*="btn-"]) { min-height: var(--tap); }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  :root {
+    --section-y: clamp(2rem, 6vh, 3.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line:not([class*="-mask"]) { transform: none !important; }
+  [data-copy="pending"], [data-reveal="pending"] { opacity: 1 !important; animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Signature pill CTA ---------------------------------------------------
+   A gold pill with a dark circle that swells to fill it on hover and focus. The
+   entrance is CSS (rise-in); hover stays CSS so it answers instantly. */
+.cta {
+  --cta-h: max(var(--tap), 3.3rem);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--cta-h);
+  padding: 0.15rem 1.7rem 0.15rem calc(var(--cta-h) + 0.35rem);
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(247, 237, 213, 0.94), rgba(224, 185, 114, 0.94));
+  color: var(--color-ink-950);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+  cursor: pointer;
+}
+.cta .cta-circle {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: calc(var(--cta-h) - 0.3rem);
+  height: calc(var(--cta-h) - 0.3rem);
+  border-radius: 999px;
+  background: var(--color-ink-950);
+  transition: width 0.5s var(--ease-weighted);
+  z-index: -1;
+}
+.cta .cta-icon {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--cta-h) / 2 - 0.7rem + 0.075rem);
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: -0.7rem;
+  color: var(--color-gold-250);
+  transition: transform 0.5s var(--ease-weighted), color 0.5s var(--ease-weighted);
+}
+.cta .cta-text {
+  transition: color 0.5s var(--ease-weighted);
+}
+.cta:hover .cta-circle,
+.cta:focus-visible .cta-circle { width: calc(100% - 0.3rem); }
+.cta:hover .cta-icon,
+.cta:focus-visible .cta-icon { transform: translateX(0.35rem); }
+.cta:hover .cta-text,
+.cta:focus-visible .cta-text { color: var(--color-gold-100); }
+
+/* ---- Service row ------------------------------------------------------------ */
+.service-row {
+  position: relative;
+  border-top: var(--hairline);
+  transition: background-color 0.4s ease-out;
+}
+.service-row::before {
+  content: "";
+  position: absolute;
+  inset: -1px 0 auto 0;
+  height: 1px;
+  background: var(--gold-gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+.service-row:hover::before,
+.service-row:focus-within::before { transform: scaleX(1); }
+.service-row:hover,
+.service-row:focus-within { background: rgba(224, 185, 114, 0.035); }
+.service-row .go {
+  transition: background-color 0.4s ease-out, color 0.4s ease-out, border-color 0.4s ease-out, transform 0.5s var(--ease-out-expo);
+}
+.service-row:hover .go,
+.service-row:focus-within .go {
+  background: var(--color-gold-250);
+  border-color: var(--color-gold-250);
+  color: var(--color-ink-950);
+  transform: translateX(0.2rem);
+}
+
+/* ---- Booking picker --------------------------------------------------------- */
+.day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-height: 2.5rem;
+  border-radius: var(--radius-tile);
+  border: 1px solid rgba(224, 185, 114, 0.18);
+  background: rgba(224, 185, 114, 0.07);
+  color: var(--color-gold-100);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  transition: background-color 0.3s ease-out, border-color 0.3s ease-out, color 0.3s ease-out, transform 0.35s var(--ease-out-expo), box-shadow 0.4s var(--ease-out-expo);
+}
+.day:not(:disabled):hover {
+  border-color: var(--color-gold-250);
+  background: rgba(224, 185, 114, 0.16);
+  transform: translateY(-1px);
+}
+.day:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: #5d5444;
+  font-weight: 500;
+  cursor: not-allowed;
+}
+.day[aria-pressed="true"]:not(:disabled),
+.day[aria-pressed="true"]:not(:disabled):hover {
+  transform: none;
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--color-ink-950);
+  box-shadow: 0 12px 28px -12px rgba(224, 185, 114, 0.65);
+}
+.day[data-today="true"]:not([aria-pressed="true"])::after {
+  content: "";
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  width: 0.25rem;
+  height: 0.25rem;
+  margin-left: -0.125rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-tile);
+  border: 1px solid rgba(224, 185, 114, 0.28);
+  background: transparent;
+  color: var(--color-gold-100);
+  font-size: 0.9375rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.3s ease-out, border-color 0.3s ease-out, color 0.3s ease-out, transform 0.35s var(--ease-out-expo);
+}
+.slot:hover { border-color: var(--color-gold-250); background: rgba(224, 185, 114, 0.1); }
+.slot[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--gold-gradient);
+  color: var(--color-ink-950);
+}
+
+.step-dot {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(247, 237, 213, 0.2);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #a89a7d;
+  transition: background-color 0.4s ease-out, border-color 0.4s ease-out, color 0.4s ease-out;
+}
+li[aria-current="step"] > .step-dot {
+  border-color: var(--color-gold-250);
+  background: rgba(224, 185, 114, 0.14);
+  color: var(--color-gold-250);
+}
+li[data-done="true"] > .step-dot {
+  border-color: transparent;
+  background: var(--color-gold-250);
+  color: var(--color-ink-950);
 }
