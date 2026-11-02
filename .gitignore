@@ -1,0 +1,11 @@
+node_modules
+.next
+data/*.db*
+data/outbox
+.env
+.env.local
+*.tsbuildinfo
+next-env.d.ts
+test-results
+playwright-report
+.tmp
